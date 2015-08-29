@@ -27,6 +27,18 @@ var axes = {
 var gameBoard = d3.select('.container').append('svg:svg')
             .attr('width', gameOptions.width)
             .attr('height', gameOptions.height);
+gameBoard.append('filter')
+          .attr('width', '100%')
+          .attr('height', '100%')
+          .attr('id', 'fred')
+          .append('feImage')
+          .attr('xlink:href', 'fred.svg');
+gameBoard.append('filter')
+          .attr('width', '100%')
+          .attr('height', '100%')
+          .attr('id', 'mylittlepony')
+          .append('feImage')
+          .attr('xlink:href', 'mylittlepony.png');
 
 // Scores
 var updateScore = function() {
@@ -52,7 +64,7 @@ var Player = function(playerGameOptions) {
   this.x = (playerGameOptions.width / 2);
   this.y = (playerGameOptions.height / 2);
   // this.angle = ;
-  this.r = 10;
+  this.r = 25;
 };
 
 //Places player on board and adds attributes
@@ -62,7 +74,8 @@ Player.prototype.render = function(gameBoard) {
     .attr('cx', this.x)
     .attr('cy', this.y)
     .attr('fill', this.fill)
-    .attr('r', this.r);
+    .attr('r', this.r)
+    .attr('filter', 'url(#mylittlepony)');
   this.setupDragging();
 };
 //Returns player x coordinate value
@@ -156,7 +169,8 @@ var render = function(enemy_data) {
       .attr('class', 'enemy')
       .attr('cx', function(enemy) { return axes.x(enemy.x); })
       .attr('cy', function(enemy) { return axes.y(enemy.y); })
-      .attr('r', 10);
+      .attr('r', 25)
+      .attr('filter', 'url(#fred)');
 
     enemies.exit()
       .remove();
@@ -257,7 +271,7 @@ var render = function(enemy_data) {
 
   return enemies.transition()
     .duration(500)
-    .attr('r', 10)
+    .attr('r', 25)
   .transition()
     .duration(2000)
     .tween('custom', transitionPlusCollisionDetection);
