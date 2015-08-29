@@ -48,13 +48,16 @@ Feel free to use it if you like. */
   stroke-width: 1.5px;
 }
 
+/*.enemy {
+  pointer-events: none;
+}*/
+
 circle.area {
   fill: #fff;
 }
 
 svg {
-  height: 100;
-  width: 100;
+  border: 1px solid black;
 }
 
 circle {

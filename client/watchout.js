@@ -48,9 +48,20 @@ var updateCollisionCount = function() {
 
 var Player = function(playerGameOptions) {
   this.playerGameOptions = playerGameOptions;
+  this.fill = '#ff6600';
+  this.x = (playerGameOptions.width / 2);
+  this.y = (playerGameOptions.height / 2);
+  // this.angle = ;
+  this.r = 10;
 };
 
-Player.prototype.render = function() {
+Player.prototype.render = function(gameBoard) {
+  this.element = gameBoard.append('svg:circle')
+    .attr('cx', this.x)
+    .attr('cy', this.y)
+    .attr('fill', this.fill)
+    .attr('r', this.r);
+  this.setupDragging();
 };
 
 Player.prototype.getX = function() {
@@ -58,7 +69,15 @@ Player.prototype.getX = function() {
 };
 
 Player.prototype.setX = function(x) {
-  this.x = x;
+  var minX = this.playerGameOptions.padding;
+  var maxX = this.playerGameOptions.width - this.playerGameOptions.padding;
+  if (x <= minX) {
+    this.x = minX;
+  } else if (x >= maxX) {
+    this.x = maxX;
+  } else {
+    this.x = x;
+  }
 };
 
 Player.prototype.getY = function() {
@@ -66,8 +85,46 @@ Player.prototype.getY = function() {
 };
 
 Player.prototype.setY = function(y) {
-  this.y = y;
+  var minY = this.playerGameOptions.padding;
+  var maxY = this.playerGameOptions.height - this.playerGameOptions.padding;
+  if (y <= minY) {
+    this.y = minY;
+  } else if (y >= maxY) {
+    this.y = maxY;
+  } else {
+    this.y = y;
+  }
 };
+
+Player.prototype.transform = function(options) {
+  if (options.x !== undefined) {
+    this.setX(options.x);
+  }
+  if (options.y !== undefined) {
+    this.setY(options.y);
+  }
+  // d3(this).attr('transform', )
+};
+
+Player.prototype.moveAbsolute = function(x, y) {
+  this.transform({x:x, y:y});
+};
+
+Player.prototype.moveRelative = function(dx, dy) {
+  this.transform({x: (this.getX() + dx), y: (this.getY() + dy)});
+};
+
+Player.prototype.setupDragging = function() {
+  var that = this;
+  var dragMove = function() {
+    that.moveRelative(d3.event.dx, d3.event.dy);
+  };
+  var drag = d3.behavior.drag().on('drag', dragMove);
+  this.element.call(drag);
+  // drag.call(d3.select(this));
+};
+
+var player = new Player(gameOptions).render(gameBoard);
 
 /* ENEMIES */
 
@@ -77,7 +134,7 @@ var createEnemies = function() {
     enemies.push({
       id: i,
       x: (Math.random() * 100),
-      y: (Math.random() * 100)
+      y: (Math.random() * 100),
     })
   }
   return enemies;
@@ -113,9 +170,15 @@ var render = function(enemy_data) {
       var maxX = (parseFloat(enemy.attr('cx')) + r);
       var maxY = (parseFloat(enemy.attr('cy')) + r);
 
-      if(player.x > minX && player.x < maxX && player.y > minY && player.y < maxY) {
-        cb();
-      }
+      // if(player.x > minX && player.x < maxX && player.y > minY && player.y < maxY) {
+      //   if (enemy.inCollision === false) {
+      //     console.log("collided!");
+      //     cb();
+      //     enemy.inCollision = true;
+      //   }
+      // } else {
+      //   enemy.inCollision = false;
+      // }
     };
 
     // onCollision
@@ -190,23 +253,26 @@ d3.select('svg')
   .on('mousemove', function() {
     player.x = d3.mouse(this)[0];
     player.y = d3.mouse(this)[1];
+  })
+  .on('mouseleave', function() {
+    console.log("Left the border!");
+    updateBestScore();
+    gameStats.score = 0;
+    gameStats.collision = 0;
+    updateScore();
+    updateCollisionCount();
   });
 
-
+// d3.select('circle')
+//   .on('mousemove', function() {
+//     // debugger;
+//     console.log("Hit a circle!");
+//     updateBestScore();   
+//     gameStats.score = 0;
+//     gameStats.collision++;
+//     updateScore();  
+//     updateCollisionCount(); 
+//   });
 //SVGs covering a larger area than just the circle
-//
 
 
-
-
-
-// console.log(gameBoard);
-
-// d3.select('.container > svg').append('svg');
-// var incrX = 0;
-// var incrY = 0;
-// for (var i = 0; i < gameOptions.nEnemies; i++) {
-//   incrX += 12;
-//   incrY += 12;
-//   d3.selectAll('.container > svg > svg').append('circle').attr('cx', incrX).attr('cy', incrY).attr('r', '10');
-// }
