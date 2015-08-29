@@ -45,7 +45,7 @@ var updateCollisionCount = function() {
 };
 
 /* THE PLAYER */
-
+//Player Constructor
 var Player = function(playerGameOptions) {
   this.playerGameOptions = playerGameOptions;
   this.fill = '#ff6600';
@@ -55,19 +55,21 @@ var Player = function(playerGameOptions) {
   this.r = 10;
 };
 
+//Places player on board and adds attributes
 Player.prototype.render = function(gameBoard) {
   this.element = gameBoard.append('svg:circle')
+    .attr('class', 'player')
     .attr('cx', this.x)
     .attr('cy', this.y)
     .attr('fill', this.fill)
     .attr('r', this.r);
   this.setupDragging();
 };
-
+//Returns player x coordinate value
 Player.prototype.getX = function() {
   return this.x;
 };
-
+//Sets player x coordinate value
 Player.prototype.setX = function(x) {
   var minX = this.playerGameOptions.padding;
   var maxX = this.playerGameOptions.width - this.playerGameOptions.padding;
@@ -79,11 +81,11 @@ Player.prototype.setX = function(x) {
     this.x = x;
   }
 };
-
+//Returns player y coordinate value
 Player.prototype.getY = function() {
   return this.y;
 };
-
+//Sets player y coordinate value
 Player.prototype.setY = function(y) {
   var minY = this.playerGameOptions.padding;
   var maxY = this.playerGameOptions.height - this.playerGameOptions.padding;
@@ -95,33 +97,61 @@ Player.prototype.setY = function(y) {
     this.y = y;
   }
 };
+//
+// Player.prototype.transform = function(options) {
+//   if (options.x !== undefined) {
+//     this.setX(options.x);
+//   }
+//   if (options.y !== undefined) {
+//     this.setY(options.y);
+//   }
+//   // console.log("Moving to: " + this.getX() + " " + this.getY());
+//   // var translateString = 'translate(' + this.getX() + ',' + this.getY() + ')';
+//   // this.element.attr('transform', translateString);
 
-Player.prototype.transform = function(options) {
-  if (options.x !== undefined) {
-    this.setX(options.x);
-  }
-  if (options.y !== undefined) {
-    this.setY(options.y);
-  }
-  // d3(this).attr('transform', )
-};
+//   this.attr('cx', function() {
+//     return this.getX();
+//   }).attr('cy', function() {
+//     return this.getY();
+//   });
+// };
 
-Player.prototype.moveAbsolute = function(x, y) {
-  this.transform({x:x, y:y});
-};
+// Player.prototype.moveAbsolute = function(x, y) {
+//   this.transform({x:x, y:y});
+// };
 
-Player.prototype.moveRelative = function(dx, dy) {
-  this.transform({x: (this.getX() + dx), y: (this.getY() + dy)});
-};
+// Player.prototype.moveRelative = function(dx, dy) {
+//   this.transform({x: (this.getX() + dx), y: (this.getY() + dy)});
+// };
 
 Player.prototype.setupDragging = function() {
   var that = this;
   var dragMove = function() {
-    that.moveRelative(d3.event.dx, d3.event.dy);
+    // that.moveAbsolute(d3.event.x, d3.event.y);
+    that.element.attr('cx', function() {
+      var minX = that.playerGameOptions.padding;
+      var maxX = that.playerGameOptions.width - that.playerGameOptions.padding;
+      var x = d3.event.x;
+      if (x <= minX) {
+        x = minX;
+      } else if (x >= maxX) {
+        x = maxX;
+      }
+      return x;
+    }).attr('cy', function() {
+      var minY = that.playerGameOptions.padding;
+      var maxY = that.playerGameOptions.height - that.playerGameOptions.padding;
+      var y = d3.event.y;
+      if (y <= minY) {
+        y = minY;
+      } else if (y >= maxY) {
+        y = maxY;
+      }
+      return y;
+    })
   };
   var drag = d3.behavior.drag().on('drag', dragMove);
   this.element.call(drag);
-  // drag.call(d3.select(this));
 };
 
 var player = new Player(gameOptions).render(gameBoard);
@@ -255,7 +285,6 @@ d3.select('svg')
     player.y = d3.mouse(this)[1];
   })
   .on('mouseleave', function() {
-    console.log("Left the border!");
     updateBestScore();
     gameStats.score = 0;
     gameStats.collision = 0;
