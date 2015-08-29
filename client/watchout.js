@@ -11,7 +11,8 @@ var gameOptions = {
 
 var gameStats = {
   score: 0,
-  bestScore: 0
+  bestScore: 0,
+  collision: 0
 };
 
 /* SETUP THE GAME BOARD */
@@ -39,9 +40,34 @@ var updateBestScore = function() {
   }
 };
 
+var updateCollisionCount = function() {
+  d3.select('#collision-count').text(gameStats.collision.toString());
+};
+
 /* THE PLAYER */
 
+var Player = function(playerGameOptions) {
+  this.playerGameOptions = playerGameOptions;
+};
 
+Player.prototype.render = function() {
+};
+
+Player.prototype.getX = function() {
+  return this.x;
+};
+
+Player.prototype.setX = function(x) {
+  this.x = x;
+};
+
+Player.prototype.getY = function() {
+  return this.y;
+};
+
+Player.prototype.setY = function(y) {
+  this.y = y;
+};
 
 /* ENEMIES */
 
@@ -59,10 +85,15 @@ var createEnemies = function() {
 
 /* RENDERING THE GAME BOARD */
 
+var player = {
+  x: 0,
+  y: 0
+};
+
 var render = function(enemy_data) {
   var enemies = gameBoard.selectAll('circle.enemy')
     .data(enemy_data, function(d) { return d.id;});
-    // debugger;
+    
   enemies.enter()
     .append('svg:circle')
       .attr('class', 'enemy')
@@ -73,10 +104,31 @@ var render = function(enemy_data) {
     enemies.exit()
       .remove();
 
-    // checkCollision
+
+    var checkCollision = function(enemy, cb) {
+      var r = parseFloat(enemy.attr('r'));
+      var minX = (parseFloat(enemy.attr('cx')) - r);
+      var minY = (parseFloat(enemy.attr('cy')) - r);
+
+      var maxX = (parseFloat(enemy.attr('cx')) + r);
+      var maxY = (parseFloat(enemy.attr('cy')) + r);
+
+      if(player.x > minX && player.x < maxX && player.y > minY && player.y < maxY) {
+        cb();
+      }
+    };
+
     // onCollision
+
+    var onCollision = function() {
+      updateBestScore();   
+      gameStats.score = 0;
+      gameStats.collision++;
+      updateScore();  
+      updateCollisionCount(); 
+    };
     
-    var tweenWithCollisionDetection = function(endData) {
+    var transitionPlusCollisionDetection = function(endData) {
       
       var enemy = d3.select(this);
       
@@ -87,11 +139,11 @@ var render = function(enemy_data) {
 
       var endPos = {
         x: axes.x(endData.x),
-        y: axes.y(endData.y),
+        y: axes.y(endData.y)
       };
 
       return function(t) {
-        // checkCollision(enemy, onCollision);
+        checkCollision(enemy, onCollision);
 
         var enemyNextPos = {
           x: (startPos.x + (endPos.x - startPos.x) * t),
@@ -109,7 +161,7 @@ var render = function(enemy_data) {
     .attr('r', 10)
   .transition()
     .duration(2000)
-    .tween('custom', tweenWithCollisionDetection);
+    .tween('custom', transitionPlusCollisionDetection);
 };
 
 
@@ -134,10 +186,15 @@ var play = function() {
 
 play();
 
+d3.select('svg')
+  .on('mousemove', function() {
+    player.x = d3.mouse(this)[0];
+    player.y = d3.mouse(this)[1];
+  });
+
 
 //SVGs covering a larger area than just the circle
 //
-
 
 
 
