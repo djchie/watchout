@@ -48,12 +48,17 @@ Feel free to use it if you like. */
   stroke-width: 1.5px;
 }
 
-/*.enemy {
-  pointer-events: none;
-}*/
+.enemy {
+  -webkit-animation:spin 4s linear infinite;
+  -webkit-transform-origin: 50% 50%;
+}
+
+
 
 .player {
   fill: yellow;
+  padding: 0;
+  margin: 0;
 }
 
 circle.area {
@@ -70,3 +75,5 @@ circle {
   stroke-width: 3;
   fill: red;
 }
+
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
